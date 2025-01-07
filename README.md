@@ -73,3 +73,12 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Installed dependencies 
+
+```sh
+pnpm install -D typescript
+npx nuxi@latest module add @nuxtjs/tailwindcss
+npx nuxi@latest module add shadcn-nuxt
+npx nuxi module add lucide-icons
+npx shadcn-vue@latest init
