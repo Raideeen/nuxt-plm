@@ -87,3 +87,8 @@ pnpm add -D prisma
 pnpm add @prisma/client
 # Initialize Prisma
 npx prisma init
+
+# Of course, modify this...
+echo "export DATABASE_URL=postgresql://test:test@localhost:5432/test?schema=public" > .env # Don't forget to put the connection informations in the .env file for Prisma! 
+```
+
