@@ -82,3 +82,8 @@ npx nuxi@latest module add @nuxtjs/tailwindcss
 npx nuxi@latest module add shadcn-nuxt
 npx nuxi module add lucide-icons
 npx shadcn-vue@latest init
+
+pnpm add -D prisma 
+pnpm add @prisma/client
+# Initialize Prisma
+npx prisma init
