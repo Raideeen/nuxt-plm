@@ -95,3 +95,8 @@ npx prisma init
 
 ## Database initialization
 
+
+# Of course, modify this...
+echo "export DATABASE_URL=postgresql://test:test@localhost:5432/test?schema=public" > .env # Don't forget to put the connection informations in the .env file for Prisma! 
+```
+
