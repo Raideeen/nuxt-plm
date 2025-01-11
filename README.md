@@ -87,3 +87,11 @@ pnpm add -D prisma
 pnpm add @prisma/client
 # Initialize Prisma
 npx prisma init
+```
+
+## Resources 
+
+- [psql command line tutorial and cheat sheet](https://tomcam.github.io/postgres/)
+
+## Database initialization
+
