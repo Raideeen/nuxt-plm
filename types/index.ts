@@ -95,6 +95,7 @@ export interface User {
   name: string
   password: string 
   role: UserRole
+  avatarUrl?: string
   createdAt: Date
   updatedAt: Date
   recipeVersions: RecipeVersion[]

@@ -14,111 +14,112 @@ datasource db {
 }
 
 model Ingredient {
-  id              String    @id @default(uuid())
-  name            String
-  sku             String    @unique
-  minimumStock    Float
-  unit            String
-  supplierPrice   Float
-  supplierLeadTime Int      // in days
-  currentVersion  String    @default("1")
+  id                String               @id @default(uuid())
+  name              String
+  sku               String               @unique
+  minimumStock      Float
+  unit              String
+  supplierPrice     Float
+  supplierLeadTime  Int // in days
+  currentVersion    String               @default("1")
   recipeIngredients RecipeIngredient[]
-  warehouses      WarehouseInventory[]
-  versions        IngredientVersion[]
+  warehouses        WarehouseInventory[]
+  versions          IngredientVersion[]
 }
 
 model IngredientVersion {
-  id              String    @id @default(uuid())
-  ingredient      Ingredient @relation(fields: [ingredientId], references: [id])
-  ingredientId    String
-  version         String
-  updatedBy       User     @relation(fields: [userId], references: [id])
-  userId          String
-  updatedAt       DateTime @default(now())
-  changelog       String?  // Description of what changed
-  minimumStock    Float
-  unit            String
-  supplierPrice   Float
+  id               String     @id @default(uuid())
+  ingredient       Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId     String
+  version          String
+  updatedBy        User       @relation(fields: [userId], references: [id])
+  userId           String
+  updatedAt        DateTime   @default(now())
+  changelog        String? // Description of what changed
+  minimumStock     Float
+  unit             String
+  supplierPrice    Float
   supplierLeadTime Int
-  
+
   @@unique([ingredientId, version])
 }
 
 model Recipe {
-  id          String    @id @default(uuid())
-  name        String
-  currentVersion String @default("1")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  notes       String?
-  ingredients RecipeIngredient[]
+  id              String             @id @default(uuid())
+  name            String
+  currentVersion  String             @default("1")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  notes           String?
+  ingredients     RecipeIngredient[]
   productionLines ProductionLine[]
-  versions    RecipeVersion[]
+  versions        RecipeVersion[]
 }
 
 model RecipeIngredient {
-  id            String    @id @default(uuid())
-  recipe        Recipe    @relation(fields: [recipeId], references: [id])
-  recipeId      String
-  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
-  ingredientId  String
-  quantity      Float
-  unit          String
+  id           String     @id @default(uuid())
+  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  recipeId     String
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId String
+  quantity     Float
+  unit         String
 }
 
 model RecipeVersion {
-  id          String    @id @default(uuid())
-  recipe      Recipe    @relation(fields: [recipeId], references: [id])
-  recipeId    String
-  version     String
-  updatedBy   User      @relation(fields: [userId], references: [id])
-  userId      String
-  updatedAt   DateTime  @default(now())
-  changelog   String?   // Description of what changed
-  
+  id        String   @id @default(uuid())
+  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId  String
+  version   String
+  updatedBy User     @relation(fields: [userId], references: [id])
+  userId    String
+  updatedAt DateTime @default(now())
+  changelog String? // Description of what changed
+
   @@unique([recipeId, version])
 }
 
 model Warehouse {
-  id          String    @id @default(uuid())
-  name        String
-  location    String
-  inventory   WarehouseInventory[]
+  id        String               @id @default(uuid())
+  name      String
+  location  String
+  inventory WarehouseInventory[]
 }
 
 model WarehouseInventory {
-  id            String    @id @default(uuid())
-  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
-  warehouseId   String
-  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
-  ingredientId  String
-  currentStock  Float
-  lastUpdated   DateTime  @default(now())
+  id           String     @id @default(uuid())
+  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
+  warehouseId  String
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId String
+  currentStock Float
+  lastUpdated  DateTime   @default(now())
 
   @@unique([warehouseId, ingredientId])
 }
 
 model ProductionLine {
-  id                String    @id @default(uuid())
-  name              String
-  recipe            Recipe    @relation(fields: [recipeId], references: [id])
-  recipeId          String
-  quantity          Float
-  destination       String
-  frequency         String    // one-off, daily, weekly, monthly
-  status            String    // planned, in-progress, completed, cancelled
-  startDate         DateTime
+  id                 String    @id @default(uuid())
+  name               String
+  recipe             Recipe    @relation(fields: [recipeId], references: [id])
+  recipeId           String
+  quantity           Float
+  destination        String
+  frequency          String // one-off, daily, weekly, monthly
+  status             String // planned, in-progress, completed, cancelled
+  startDate          DateTime
   nextProductionDate DateTime?
 }
 
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  name            String
-  password        String    
-  role            String    // admin, manager, operator, viewer
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  recipeVersions    RecipeVersion[]
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  name               String
+  password           String
+  role               String // admin, manager, operator, viewer
+  avatarUrl          String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  recipeVersions     RecipeVersion[]
   ingredientVersions IngredientVersion[]
 }

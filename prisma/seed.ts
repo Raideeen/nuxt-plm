@@ -11,16 +11,18 @@ async function main() {
       email: 'manager@plm.com',
       name: 'John Manager',
       password: await hash('manager123', 10),
-      role: 'manager'
+      role: 'manager',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John', // Optional: Use a placeholder avatar service
     }
   })
-
+  
   const operator = await prisma.user.create({
     data: {
       email: 'operator@plm.com',
       name: 'Alice Operator',
       password: await hash('operator123', 10),
-      role: 'operator'
+      role: 'operator',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice', // Optional: Use a placeholder avatar service
     }
   })
 
