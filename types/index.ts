@@ -56,6 +56,17 @@ export interface IngredientVersion {
   supplierLeadTime: number
 }
 
+export interface IngredientForm {
+  id?: string
+  name: string
+  sku: string
+  unit: 'kg' | 'l' | 'unit'
+  minimumStock: number
+  supplierPrice: number
+  supplierLeadTime: number
+}
+
+
 export interface Warehouse {
   id: string
   name: string
@@ -93,7 +104,7 @@ export interface User {
   id: string
   email: string
   name: string
-  password: string 
+  password: string
   role: UserRole
   avatarUrl?: string
   createdAt: Date

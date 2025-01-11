@@ -1,31 +1,96 @@
 <template>
   <div class="min-h-screen">
-    <!-- Top Navigation Bar -->
-    <div class="border-b">
+    <header class="border-b">
       <div class="flex h-16 items-center px-4">
         <!-- Main Navigation -->
-        <nav class="flex items-center space-x-4 lg:space-x-6">
-          <NuxtLink
-            v-for="item in navigation"
-            :key="item.href"
-            :to="item.href"
-            :class="[
-              'text-sm font-medium transition-colors hover:text-primary',
-              $route.path === item.href
-                ? 'text-primary'
-                : 'text-muted-foreground',
-            ]"
-          >
-            {{ item.title }}
-          </NuxtLink>
-        </nav>
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/dashboard"
+                :class="navigationMenuTriggerStyle()"
+              >
+                Dashboard
+              </NavigationMenuLink>
+            </NavigationMenuItem>
 
-        <!-- Right Side Items -->
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/products"
+                :class="navigationMenuTriggerStyle()"
+              >
+                Products
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Inventory</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul class="grid w-[400px] gap-3 p-4">
+                  <li>
+                    <NavigationMenuLink as-child>
+                      <NuxtLink
+                        to="/inventory/ingredients"
+                        class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      >
+                        <div class="text-sm font-medium leading-none">
+                          Ingredients
+                        </div>
+                        <p
+                          class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                        >
+                          Manage ingredients and their stock levels
+                        </p>
+                      </NuxtLink>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink as-child>
+                      <NuxtLink
+                        to="/inventory/warehouses"
+                        class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      >
+                        <div class="text-sm font-medium leading-none">
+                          Warehouses
+                        </div>
+                        <p
+                          class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                        >
+                          Manage warehouses and stock distribution
+                        </p>
+                      </NuxtLink>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/reporting"
+                :class="navigationMenuTriggerStyle()"
+              >
+                Reporting
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                href="/production"
+                :class="navigationMenuTriggerStyle()"
+              >
+                Production
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+
+        <!-- Right side items -->
         <div class="ml-auto flex items-center space-x-4">
           <UserNav />
         </div>
       </div>
-    </div>
+    </header>
 
     <!-- Main Content -->
     <main class="p-8">
@@ -35,21 +100,14 @@
 </template>
 
 <script setup lang="ts">
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import UserNav from "~/components/ui/UserNav.vue";
-import { useAuth } from "~/composables/useAuth";
-
-const router = useRouter();
-const { clearUser } = useAuth();
-const navigation = [
-  { title: "Dashboard", href: "/dashboard" },
-  { title: "Products", href: "/products" },
-  { title: "Inventory", href: "/inventory" },
-  { title: "Reporting", href: "/reporting" },
-  { title: "Production", href: "/production" },
-];
-
-const handleLogout = async () => {
-  clearUser();
-  await router.push("/");
-};
 </script>
