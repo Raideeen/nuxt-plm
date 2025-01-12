@@ -15,31 +15,6 @@
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Products</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul class="grid w-[400px] gap-3 p-4">
-                  <li>
-                    <NavigationMenuLink as-child>
-                      <NuxtLink
-                        to="/products/recipes"
-                        class="block select-none space-y-1 rounded-md p-3 learding-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                      >
-                        <div class="text-sm font-medium leading-none">
-                          Recipes
-                        </div>
-                        <p
-                          class="line-clamp-2 text-sm leading-snug text-muted-foreground"
-                        >
-                          Manage recipes
-                        </p>
-                      </NuxtLink>
-                    </NavigationMenuLink>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
               <NavigationMenuTrigger>Inventory</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul class="grid w-[400px] gap-3 p-4">
@@ -83,10 +58,10 @@
 
             <NavigationMenuItem>
               <NavigationMenuLink
-                href="/reporting"
+                href="/products/recipes"
                 :class="navigationMenuTriggerStyle()"
               >
-                Reporting
+                Products
               </NavigationMenuLink>
             </NavigationMenuItem>
 
@@ -99,6 +74,15 @@
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
+
+          <NavigationMenuItem>
+            <NavigationMenuLink
+              href="/reporting"
+              :class="navigationMenuTriggerStyle()"
+            >
+              Reporting
+            </NavigationMenuLink>
+          </NavigationMenuItem>
         </NavigationMenu>
 
         <!-- Right side items -->
@@ -116,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import { onServerPrefetch } from "#imports";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -126,4 +111,11 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import UserNav from "~/components/ui/UserNav.vue";
+import { useAuth } from "~/composables/useAuth";
+
+const { user, fetchUser } = useAuth();
+
+onServerPrefetch(async () => {
+  await fetchUser();
+});
 </script>

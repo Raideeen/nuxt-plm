@@ -1,19 +1,22 @@
-export const useAuth = () => {
-    const user = useState('user', () => null)
-    const isAuthenticated = computed(() => !!user.value)
-  
-    const setUser = (userData: any) => {
-      user.value = userData
-    }
-  
-    const clearUser = () => {
+export function useAuth() {
+  const user = useState('user', () => null)
+
+  function setUser(u) {
+    user.value = u
+  }
+
+  async function fetchUser() {
+    try {
+      const data = await $fetch('/api/auth/me')
+      user.value = data
+    } catch (error) {
       user.value = null
     }
-  
-    return {
-      user,
-      isAuthenticated,
-      setUser,
-      clearUser
-    }
   }
+
+  return {
+    user,
+    setUser,
+    fetchUser
+  }
+}

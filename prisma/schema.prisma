@@ -14,18 +14,19 @@ datasource db {
 }
 
 model Ingredient {
-  id                String               @id @default(uuid())
-  name              String
-  sku               String               @unique
-  minimumStock      Float
-  unit              String
-  supplierPrice     Float
-  supplierLeadTime  Int // in days
-  currentVersion    String               @default("1")
-  recipeIngredients RecipeIngredient[]
-  warehouses        WarehouseInventory[]
-  versions          IngredientVersion[]
-  purchaseOrders    PurchaseOrder[]
+  id                   String                 @id @default(uuid())
+  name                 String
+  sku                  String                 @unique
+  minimumStock         Float
+  unit                 String
+  supplierPrice        Float
+  supplierLeadTime     Int // in days
+  currentVersion       String                 @default("1")
+  recipeIngredients    RecipeIngredient[]
+  warehouses           WarehouseInventory[]
+  versions             IngredientVersion[]
+  purchaseOrders       PurchaseOrder[]
+  ProductionAllocation ProductionAllocation[]
 }
 
 model IngredientVersion {
@@ -82,10 +83,11 @@ model RecipeVersion {
 }
 
 model Warehouse {
-  id        String               @id @default(uuid())
-  name      String
-  location  String
-  inventory WarehouseInventory[]
+  id                   String                 @id @default(uuid())
+  name                 String
+  location             String
+  inventory            WarehouseInventory[]
+  ProductionAllocation ProductionAllocation[]
 }
 
 model WarehouseInventory {
@@ -113,16 +115,36 @@ model PurchaseOrder {
 }
 
 model ProductionLine {
-  id                 String    @id @default(uuid())
+  id                 String                 @id @default(uuid())
   name               String
-  recipe             Recipe    @relation(fields: [recipeId], references: [id])
+  recipe             Recipe                 @relation(fields: [recipeId], references: [id])
   recipeId           String
-  quantity           Float
   destination        String
+  quantity           Int // Number of packs
+  unitsPerPack       Int
   frequency          String // one-off, daily, weekly, monthly
   status             String // planned, in-progress, completed, cancelled
-  startDate          DateTime
   nextProductionDate DateTime?
+  startDate          DateTime
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  allocations        ProductionAllocation[]
+}
+
+model ProductionAllocation {
+  id               String         @id @default(uuid())
+  productionLine   ProductionLine @relation(fields: [productionLineId], references: [id])
+  productionLineId String
+  ingredient       Ingredient     @relation(fields: [ingredientId], references: [id])
+  ingredientId     String
+  warehouse        Warehouse      @relation(fields: [warehouseId], references: [id])
+  warehouseId      String
+  quantity         Float
+  status           String // reserved, used, cancelled
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([productionLineId, ingredientId, warehouseId])
 }
 
 model User {

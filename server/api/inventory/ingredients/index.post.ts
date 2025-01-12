@@ -1,4 +1,3 @@
-// server/api/inventory/ingredients.post.ts
 import prisma from '~/utils/prisma'
 
 export default defineEventHandler(async (event) => {

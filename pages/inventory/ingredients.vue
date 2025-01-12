@@ -508,7 +508,6 @@ definePageMeta({
 
 // Add this fetch
 const { data: users } = await useFetch("/api/users");
-console.log("Available users:", users.value);
 
 // Add state for version history dialog
 const showVersionDialog = ref(false);

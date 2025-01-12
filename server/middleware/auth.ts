@@ -5,7 +5,6 @@ export default defineEventHandler(async (event) => {
     if (event.path === '/api/auth/login') return
 
     const user = await prisma.user.findFirst()
-    console.log('Server Middleware - User found:', user)
 
     if (!user) {
         throw createError({

@@ -4,7 +4,8 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
     '@nuxtjs/color-mode',
-    'nuxt-lucide-icons'
+    'nuxt-lucide-icons',
+    'nuxt-echarts'
   ],
   shadcn: {
     /**
