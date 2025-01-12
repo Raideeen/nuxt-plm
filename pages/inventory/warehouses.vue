@@ -40,6 +40,7 @@
             <TableCell class="text-right space-x-2">
               <Button variant="ghost" size="icon" @click="viewStock(warehouse)">
                 <PackageIcon class="h-4 w-4" />
+                <span class="sr-only">View stock</span>
               </Button>
               <Button
                 variant="ghost"
@@ -47,7 +48,18 @@
                 @click="editWarehouse(warehouse)"
               >
                 <PencilIcon class="h-4 w-4" />
+                <span class="sr-only">Edit warehouse</span>
               </Button>
+            </TableCell>
+          </TableRow>
+
+          <!-- Empty state -->
+          <TableRow v-if="!warehouses?.length">
+            <TableCell
+              colspan="5"
+              class="text-center py-8 text-muted-foreground"
+            >
+              No warehouses found. Click 'Add Warehouse' to create one.
             </TableCell>
           </TableRow>
         </TableBody>

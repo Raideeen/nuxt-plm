@@ -25,6 +25,7 @@ model Ingredient {
   recipeIngredients RecipeIngredient[]
   warehouses        WarehouseInventory[]
   versions          IngredientVersion[]
+  purchaseOrders    PurchaseOrder[]
 }
 
 model IngredientVersion {
@@ -47,6 +48,7 @@ model IngredientVersion {
 model Recipe {
   id              String             @id @default(uuid())
   name            String
+  description     String?
   currentVersion  String             @default("1")
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
@@ -96,6 +98,18 @@ model WarehouseInventory {
   lastUpdated  DateTime   @default(now())
 
   @@unique([warehouseId, ingredientId])
+}
+
+model PurchaseOrder {
+  id                   String     @id @default(uuid())
+  ingredient           Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId         String
+  quantity             Float
+  expectedDeliveryDate DateTime
+  notes                String?
+  status               String // pending, delivered, cancelled
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
 }
 
 model ProductionLine {

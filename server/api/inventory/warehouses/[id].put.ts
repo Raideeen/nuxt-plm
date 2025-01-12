@@ -1,3 +1,5 @@
+import prisma from '~/utils/prisma'
+
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
     const body = await readBody(event)
@@ -7,6 +9,9 @@ export default defineEventHandler(async (event) => {
         data: {
             name: body.name,
             location: body.location
+        },
+        include: {
+            inventory: true
         }
     })
 })

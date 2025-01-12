@@ -9,7 +9,6 @@
       </div>
 
       <div class="flex space-x-2">
-        <!-- Add Export Button -->
         <Button variant="outline" @click="handleExport">
           <DownloadIcon class="mr-2 h-4 w-4" />
           Export
@@ -197,6 +196,14 @@
               >
                 <ClockIcon class="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                @click="assignToWarehouse(ingredient)"
+              >
+                <WarehouseIcon class="h-4 w-4" />
+                <span class="sr-only">Assign to warehouse</span>
+              </Button>
             </TableCell>
           </TableRow>
         </TableBody>
@@ -292,6 +299,7 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Show Version Dialog -->
     <Dialog :open="showVersionDialog" @update:open="showVersionDialog = false">
       <DialogContent class="sm:max-w-[600px]">
         <DialogHeader>
@@ -363,6 +371,115 @@
         </div>
       </DialogContent>
     </Dialog>
+
+    <Dialog :open="showAssignDialog" @update:open="showAssignDialog = false">
+      <DialogContent class="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Assign to Warehouse</DialogTitle>
+          <DialogDescription>
+            Assign {{ selectedIngredient?.name }} to warehouses and set
+            quantities
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4">
+          <div
+            v-for="warehouse in warehouses"
+            :key="warehouse.id"
+            class="space-y-2"
+          >
+            <div class="flex items-center justify-between">
+              <Label>{{ warehouse.name }}</Label>
+              <div class="flex items-center space-x-2">
+                <Input
+                  type="number"
+                  class="w-24"
+                  v-model="warehouseAssignments[warehouse.id]"
+                  placeholder="Quantity"
+                />
+                <span class="text-sm text-muted-foreground">{{
+                  selectedIngredient?.unit
+                }}</span>
+              </div>
+            </div>
+            <!-- Show current stock if any -->
+            <p class="text-sm text-muted-foreground">
+              Current stock: {{ getCurrentStock(warehouse.id) }}
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            @click="showAssignDialog = false"
+          >
+            Cancel
+          </Button>
+          <Button type="submit" @click="handleAssignSubmit">
+            Save Assignments
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Add Order from Supplier dialog -->
+    <Dialog :open="showOrderDialog" @update:open="showOrderDialog = false">
+      <DialogContent class="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Order from Supplier</DialogTitle>
+          <DialogDescription>
+            Create a purchase order for {{ selectedIngredient?.name }}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form @submit.prevent="handleOrderSubmit" class="space-y-4">
+          <div class="space-y-2">
+            <Label>Quantity</Label>
+            <div class="flex items-center space-x-2">
+              <Input type="number" v-model="orderForm.quantity" required />
+              <span class="text-sm text-muted-foreground">{{
+                selectedIngredient?.unit
+              }}</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <Label>Expected Delivery Date</Label>
+            <Input
+              type="date"
+              v-model="orderForm.deliveryDate"
+              :min="minDeliveryDate"
+              required
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label>Notes</Label>
+            <Textarea
+              v-model="orderForm.notes"
+              placeholder="Any special instructions..."
+            />
+          </div>
+
+          <p class="text-sm text-muted-foreground">
+            Estimated cost: €{{ calculateOrderCost }}
+          </p>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              @click="showOrderDialog = false"
+            >
+              Cancel
+            </Button>
+            <Button type="submit"> Place Order </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -376,6 +493,7 @@ import {
   DownloadIcon,
   PencilIcon,
   PlusIcon,
+  WarehouseIcon,
 } from "lucide-vue-next";
 import { reactive, ref } from "vue";
 import { exportToCSV } from "~/utils/export";
@@ -395,6 +513,14 @@ console.log("Available users:", users.value);
 // Add state for version history dialog
 const showVersionDialog = ref(false);
 const selectedIngredient = ref<any>(null);
+const showAssignDialog = ref(false);
+const showOrderDialog = ref(false);
+const warehouseAssignments = reactive<Record<string, number>>({});
+const orderForm = reactive({
+  quantity: 0,
+  deliveryDate: "",
+  notes: "",
+});
 
 // Compute sorted versions, newest first
 const sortedVersions = computed(() => {
@@ -425,6 +551,20 @@ const form = reactive<IngredientForm>({
 const sortedIngredients = computed(() => {
   return sortIngredients(ingredients.value || []);
 });
+const calculateOrderCost = computed(() => {
+  if (!selectedIngredient.value || !orderForm.quantity) return 0;
+  return (selectedIngredient.value.supplierPrice * orderForm.quantity).toFixed(
+    2
+  );
+});
+
+const minDeliveryDate = computed(() => {
+  const date = new Date();
+  date.setDate(
+    date.getDate() + (selectedIngredient.value?.supplierLeadTime || 0)
+  );
+  return date.toISOString().split("T")[0];
+});
 
 // Add error handling for duplicate SKU
 const errorMessage = ref("");
@@ -434,7 +574,16 @@ const { data: ingredients, refresh } = await useFetch(
   "/api/inventory/ingredients"
 );
 
+const { data: warehouses } = await useFetch("/api/inventory/warehouses");
+
 // Utility functions
+function getCurrentStock(warehouseId: string) {
+  const inventory = selectedIngredient.value?.warehouses?.find(
+    (w: any) => w.warehouseId === warehouseId
+  );
+  return inventory?.currentStock || 0;
+}
+
 function getTotalStock(ingredient: any) {
   return (
     ingredient.warehouses?.reduce(
@@ -442,6 +591,18 @@ function getTotalStock(ingredient: any) {
       0
     ) || 0
   );
+}
+
+function assignToWarehouse(ingredient: any) {
+  selectedIngredient.value = ingredient;
+  // Initialize current assignments
+  warehouses.value?.forEach((warehouse: any) => {
+    const currentAssignment = ingredient.warehouses?.find(
+      (w: any) => w.warehouseId === warehouse.id
+    );
+    warehouseAssignments[warehouse.id] = currentAssignment?.currentStock || 0;
+  });
+  showAssignDialog.value = true;
 }
 
 function resetForm() {
@@ -452,6 +613,22 @@ function resetForm() {
   form.minimumStock = 0;
   form.supplierPrice = 0;
   form.supplierLeadTime = 1;
+}
+
+async function handleAssignSubmit() {
+  try {
+    await $fetch(
+      `/api/inventory/ingredients/${selectedIngredient.value.id}/assign`,
+      {
+        method: "POST",
+        body: warehouseAssignments,
+      }
+    );
+    showAssignDialog.value = false;
+    refresh();
+  } catch (error) {
+    console.error("Error assigning to warehouses:", error);
+  }
 }
 
 // Update dialog close handlers
@@ -537,6 +714,11 @@ function formatChanges(previousVersion: any, currentVersion: any) {
       `Lead time changed was ${currentVersion.supplierLeadTime} compared to ${previousVersion.supplierLeadTime} days now`
     );
   }
+  if (previousVersion.sku !== currentVersion.sku) {
+    changes.push(
+      `SKU was ${currentVersion.sku} compared to ${previousVersion.sku} now`
+    );
+  }
 
   return changes;
 }
@@ -546,7 +728,44 @@ function handleExport() {
   if (!ingredients.value) return;
 
   const date = new Date().toISOString().split("T")[0];
-  exportToCSV(ingredients.value, `ingredients-${date}`);
+  const data = {
+    headers: [
+      "Name",
+      "SKU",
+      "Unit",
+      "Minimum Stock",
+      "Current Stock",
+      "Price (€)",
+      "Version",
+    ],
+    rows: ingredients.value.map((item) => [
+      item.name,
+      item.sku,
+      item.unit,
+      item.minimumStock,
+      getTotalStock(item),
+      item.supplierPrice,
+      `v${item.currentVersion}`,
+    ]),
+  };
+
+  exportToCSV(data, `ingredients-${date}`);
+}
+
+async function handleOrderSubmit() {
+  try {
+    await $fetch(
+      `/api/inventory/ingredients/${selectedIngredient.value.id}/order`,
+      {
+        method: "POST",
+        body: orderForm,
+      }
+    );
+    showOrderDialog.value = false;
+    refresh();
+  } catch (error) {
+    console.error("Error placing order:", error);
+  }
 }
 
 async function handleSubmit() {

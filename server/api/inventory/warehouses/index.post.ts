@@ -1,3 +1,5 @@
+import prisma from '~/utils/prisma'
+
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
@@ -5,6 +7,9 @@ export default defineEventHandler(async (event) => {
         data: {
             name: body.name,
             location: body.location
+        },
+        include: {
+            inventory: true
         }
     })
 })
