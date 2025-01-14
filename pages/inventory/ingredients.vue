@@ -13,7 +13,7 @@
           <DownloadIcon class="mr-2 h-4 w-4" />
           Export
         </Button>
-        <Button @click="addIngredient">
+        <Button v-if="can('ingredients', 'create')" @click="addIngredient">
           <PlusIcon class="mr-2 h-4 w-4" />
           Add Ingredient
         </Button>
@@ -183,6 +183,7 @@
             <TableCell>v{{ ingredient.currentVersion }}</TableCell>
             <TableCell class="text-right space-x-2">
               <Button
+                v-if="can('ingredients', 'edit')"
                 variant="ghost"
                 size="icon"
                 @click="editIngredient(ingredient)"
@@ -203,6 +204,13 @@
               >
                 <WarehouseIcon class="h-4 w-4" />
                 <span class="sr-only">Assign to warehouse</span>
+              </Button>
+              <Button
+                v-if="can('ingredients', 'delete')"
+                variant="ghost"
+                @click="confirmDelete(ingredient)"
+              >
+                <TrashIcon class="h-4 w-4" />
               </Button>
             </TableCell>
           </TableRow>
@@ -480,6 +488,25 @@
         </form>
       </DialogContent>
     </Dialog>
+
+    <Dialog :open="showDeleteDialog" @update:open="showDeleteDialog = false">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Ingredient</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete {{ ingredientToDelete?.name }}? This
+            action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button variant="ghost" @click="showDeleteDialog = false">
+            Cancel
+          </Button>
+          <Button variant="destructive" @click="handleDelete"> Delete </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -493,14 +520,15 @@ import {
   DownloadIcon,
   PencilIcon,
   PlusIcon,
+  TrashIcon,
   WarehouseIcon,
 } from "lucide-vue-next";
 import { reactive, ref } from "vue";
-import { exportToCSV } from "~/utils/export";
-
 import SelectLabel from "~/components/ui/select/SelectLabel.vue";
 import SelectTrigger from "~/components/ui/select/SelectTrigger.vue";
+import { useToast } from "~/components/ui/toast";
 import type { IngredientForm } from "~/types";
+import { exportToCSV } from "~/utils/export";
 
 definePageMeta({
   layout: "dashboard",
@@ -510,11 +538,15 @@ definePageMeta({
 const { data: users } = await useFetch("/api/users");
 
 // Add state for version history dialog
+const { can } = usePermissions();
 const showVersionDialog = ref(false);
 const selectedIngredient = ref<any>(null);
 const showAssignDialog = ref(false);
 const showOrderDialog = ref(false);
 const warehouseAssignments = reactive<Record<string, number>>({});
+const ingredientToDelete = ref(null);
+const showDeleteDialog = ref(false);
+const { toast } = useToast();
 const orderForm = reactive({
   quantity: 0,
   deliveryDate: "",
@@ -765,6 +797,37 @@ async function handleOrderSubmit() {
   } catch (error) {
     console.error("Error placing order:", error);
   }
+}
+
+async function handleDelete() {
+  try {
+    await $fetch(`/api/inventory/ingredients/${ingredientToDelete.value.id}`, {
+      method: "DELETE",
+    });
+
+    toast({
+      title: "Ingredient deleted",
+      description: `${ingredientToDelete.value.name} has been deleted successfully.`,
+    });
+
+    // Refresh the ingredients list
+    await refresh();
+    showDeleteDialog.value = false;
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error.data?.message || "Failed to delete ingredient",
+      variant: "destructive",
+    });
+  } finally {
+    ingredientToDelete.value = null;
+  }
+}
+
+// Delete functions
+function confirmDelete(ingredient: any) {
+  ingredientToDelete.value = ingredient;
+  showDeleteDialog.value = true;
 }
 
 async function handleSubmit() {

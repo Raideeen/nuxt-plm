@@ -9,12 +9,16 @@
         </p>
       </div>
       <div class="flex space-x-2">
-        <Button variant="outline" @click="handleAllBOMExport">
+        <Button
+          v-if="can('recipes', 'export')"
+          variant="outline"
+          @click="handleAllBOMExport"
+        >
           <DownloadIcon class="mr-2 h-4 w-4" />
           Export BOM
         </Button>
 
-        <Button @click="addRecipe">
+        <Button v-if="can('recipes', 'create')" @click="addRecipe">
           <PlusIcon class="mr-2 h-4 w-4" />
           Add Recipe
         </Button>
@@ -42,13 +46,28 @@
             }}</TableCell>
             <TableCell>v{{ recipe.currentVersion }}</TableCell>
             <TableCell class="text-right space-x-2">
-              <Button variant="ghost" size="icon" @click="viewBOM(recipe)">
+              <Button
+                v-if="can('recipes', 'viewBOM')"
+                variant="ghost"
+                size="icon"
+                @click="viewBOM(recipe)"
+              >
                 <ClipboardListIcon class="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" @click="editRecipe(recipe)">
+              <Button
+                v-if="can('recipes', 'edit')"
+                variant="ghost"
+                size="icon"
+                @click="editRecipe(recipe)"
+              >
                 <PencilIcon class="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" @click="viewHistory(recipe)">
+              <Button
+                v-if="can('recipes', 'viewHistory')"
+                variant="ghost"
+                size="icon"
+                @click="viewHistory(recipe)"
+              >
                 <ClockIcon class="h-4 w-4" />
               </Button>
             </TableCell>
@@ -365,6 +384,7 @@ const showBOMDialog = ref(false);
 const showVersionDialog = ref(false);
 const isEditing = ref(false);
 const selectedRecipe = ref<any>(null);
+const { can } = usePermissions();
 
 // Form state
 const form = reactive({

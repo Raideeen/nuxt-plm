@@ -9,11 +9,15 @@
         </p>
       </div>
       <div class="flex space-x-2">
-        <Button variant="outline" @click="viewAllBOMs">
+        <Button
+          v-if="can('production', 'export')"
+          variant="outline"
+          @click="viewAllBOMs"
+        >
           <ClipboardListIcon class="mr-2 h-4 w-4" />
           Generate All BOMs
         </Button>
-        <Button @click="addProductionLine">
+        <Button v-if="can('production', 'create')" @click="addProductionLine">
           <PlusIcon class="mr-2 h-4 w-4" />
           Add Production Line
         </Button>
@@ -59,6 +63,7 @@
             <TableCell class="text-right space-x-2">
               <!-- Edit button -->
               <Button
+                v-if="can('production', 'edit')"
                 variant="ghost"
                 size="icon"
                 @click="viewProductionLine(line)"
@@ -68,6 +73,7 @@
               </Button>
               <!-- BOM Button -->
               <Button
+                v-if="can('production', 'viewBOM')"
                 variant="ghost"
                 size="icon"
                 @click="viewBOM(line)"
@@ -706,6 +712,7 @@ const showBOMDialog = ref(false);
 const bomDetails = ref<any>(null);
 const showAllBOMsDialog = ref(false);
 const allBomDetails = ref<any>(null);
+const { can } = usePermissions();
 
 // Form state
 const form = reactive({
